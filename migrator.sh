@@ -748,7 +748,7 @@ retag_image() {
 
   # retag image
   echo -e "${INFO} Retagging ${V1_REGISTRY}/${i} to ${V2_REGISTRY}/${i} ${MIG_STATUS}"
-  (docker tag -f ${SOURCE_IMAGE} ${DESTINATION_IMAGE} && echo -e "${OK} Successfully retagged ${V1_REGISTRY}/${i} to ${V2_REGISTRY}/${i}\n") || catch_retag_error "${SOURCE_IMAGE}" "${DESTINATION_IMAGE}" "${3}" "${4}"
+  (docker tag ${SOURCE_IMAGE} ${DESTINATION_IMAGE} && echo -e "${OK} Successfully retagged ${V1_REGISTRY}/${i} to ${V2_REGISTRY}/${i}\n") || catch_retag_error "${SOURCE_IMAGE}" "${DESTINATION_IMAGE}" "${3}" "${4}"
 }
 
 # remove image
@@ -862,6 +862,7 @@ count_list() {
 migrate_in_increments() {
   # initialize variables for increment loops
   COUNT_START="0"
+  MIGRATION_INCREMENT=${MIGRATION_INCREMENT:-1}
   COUNT_END="${MIGRATION_INCREMENT}"
   COUNT_PULL=1
   COUNT_RETAG=1
