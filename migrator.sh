@@ -348,14 +348,14 @@ decode_auth() {
     DOCKER_HUB="true"
 
     # decode username and password as a pair
-    AUTH_CREDS="$(cat ~/.dockercfg | jq -r '."https://index.docker.io/v1/".auth' | base64 -d)"
+    AUTH_CREDS="$(cat ~/.docker/config.json | jq -r '.auths."https://index.docker.io/v1/".auth' | base64 -d)"
 
     # decode individual username and password
     DOCKER_HUB_USERNAME=$(echo ${AUTH_CREDS} | awk -F ':' '{print $1}')
     DOCKER_HUB_PASSWORD=$(echo ${AUTH_CREDS} | awk -F ':' '{print $2}')
   else
     # decode username and password as a pair
-    AUTH_CREDS="$(cat ~/.dockercfg | jq -r '."'${1}'".auth' | base64 -d)"
+    AUTH_CREDS="$(cat ~/.docker/config.json | jq -r '.auths."'${1}'".auth' | base64 -d)"
   fi
 }
 
@@ -635,7 +635,7 @@ query_source_images() {
     then
       # get a list of all repos
       echo -e "${INFO} Grabbing list of repositories from ${V1_REGISTRY}"
-      FULL_REPO_LIST=$(curl ${V1_OPTIONS} -sf ${V1_PROTO}://${AUTH_CREDS}@${V1_REGISTRY}/v1/search?q= | jq -r '.results | .[] | .name') || catch_error "curl => API failure getting repo list"
+      FULL_REPO_LIST=$(curl ${V1_OPTIONS} -sf ${V1_PROTO}://${AUTH_CREDS}@${V1_REGISTRY}/v2/_catalog | jq -r '.repositories | .[]') || catch_error "curl => API failure getting repo list"
     else
       FULL_REPO_LIST=${V1_FULL_REPO_LIST}
     fi
@@ -661,8 +661,7 @@ query_source_images() {
     do
       # get list of tags for image i
       echo -e "${INFO} Grabbing tags for ${V1_REGISTRY}/${NAMESPACE}/${i}"
-      #echo -e "curl -v ${V1_OPTIONS} -sf ${V1_PROTO}://${AUTH_CREDS}@${V1_REGISTRY}/v1/repositories/${i}/tags"
-      IMAGE_TAGS=$(curl ${V1_OPTIONS} -sf ${V1_PROTO}://${AUTH_CREDS}@${V1_REGISTRY}/v1/repositories/${i}/tags | jq -r 'keys | .[]') || catch_error "curl => API failure reading tags"
+      IMAGE_TAGS=$(curl ${V1_OPTIONS} -sf ${V1_PROTO}://${AUTH_CREDS}@${V1_REGISTRY}/v2/${i}/tags/list | jq -r '.tags | .[]') || catch_error "curl => API failure reading tags"
   
       # retrieve a list of tags at the target repository
       TAGS_AT_TARGET=$(query_tags_to_skip ${i})

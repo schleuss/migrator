@@ -1,12 +1,14 @@
-FROM alpine:3.5
+FROM ubuntu:18.04
 
-RUN apk --no-cache add bash curl jq wget groff less python py-pip &&\
-  pip install awscli &&\
-  apk --purge -v del py-pip
+RUN apt-get update -qq && apt-get install -qqy \
+    apt-transport-https \
+    ca-certificates \
+    curl
 
-### use docker-1.6.2; upgrading will break password decryption
-COPY docker-1.6.2 /usr/bin/docker
+RUN curl -sSL https://get.docker.com/ | sh
 
 COPY migrator.sh /usr/local/bin/migrator.sh
+
+VOLUME /var/lib/docker
 
 CMD ["/usr/local/bin/migrator.sh"]
